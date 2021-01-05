@@ -2,14 +2,21 @@
 
 public class BallController : MonoBehaviour
 {
-    Rigidbody2D rb;
-    bool rigidbodyOn;
-
-    Vector2 velocity;
     [SerializeField] Vector2 gravity;
     [SerializeField] Material kinematicMaterial;
-
+    
+    Rigidbody2D rb;
+    public Rigidbody2D RB {
+        get {
+        if(rb == null) {
+                rb = GetComponent<Rigidbody2D>();
+            }
+            return rb;
+        }
+    }
+    bool rigidbodyOn;
     public bool RigidbodyOn {
+
         get => rigidbodyOn;
         set {
             rigidbodyOn = value;
@@ -17,31 +24,40 @@ public class BallController : MonoBehaviour
             if (!value) {
                 GetComponent<MeshRenderer>().material = kinematicMaterial;
             }
-            rb.isKinematic = !value;
+            RB.isKinematic = !value;
         }
     }
 
-    private void Start() {
-        rb = GetComponent<Rigidbody2D>();
+    float dragCo;
+    public float DragCo { 
+        get => dragCo;
+        set {
+            dragCo = value;
+            if (rigidbodyOn) {
+                RB.drag = dragCo;
+            }
+        } 
     }
-    public void AddForce(Vector3 force, bool rigidbodyState) {
-        if (rb == null) {
-            rb = GetComponent<Rigidbody2D>();
-        }
+
+
+    Vector2 velocity;
+    public void AddForce(Vector3 force, bool rigidbodyState, float dragCo) {
         if (rigidbodyState) {
             RigidbodyOn = true;
-            rb.AddForce(force, ForceMode2D.Impulse);
+            RB.AddForce(force, ForceMode2D.Impulse);
         }
         else {
             RigidbodyOn = false;
             velocity = force;
         }
+        DragCo = dragCo;
     }
 
     private void FixedUpdate() {
         if (!rigidbodyOn) {
             transform.position += (Vector3)velocity * Time.fixedDeltaTime;
             velocity += gravity * Time.fixedDeltaTime;
+            velocity *= (1 - Time.fixedDeltaTime * DragCo);
         }
         if (transform.position.y <= 0) {
             Destroy(gameObject);

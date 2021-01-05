@@ -13,6 +13,7 @@ public class CannonController : MonoBehaviour
     [SerializeField] private float maxAngle;
     [SerializeField] private float minFireRate;
     [SerializeField] private float maxFireRate;
+    [SerializeField] private float maxDrag;
 
     private float angle;
     private float height;
@@ -21,6 +22,7 @@ public class CannonController : MonoBehaviour
     private bool autoFire = false;
     private float autoFireRemainingTime;
     private float fireRate;
+    private float dragCo;
     Vector3 startPosition;
 
     public float Height { 
@@ -64,12 +66,15 @@ public class CannonController : MonoBehaviour
     public void SetFireRate(float rate) {
         fireRate = minFireRate + rate * (maxFireRate - minFireRate);
     }
+    public void SetDrag(float drag) {
+        dragCo = drag * maxDrag;
+    }
     #endregion
 
     private void Fire() {
         GameObject ball = Instantiate(cannonBall,shaftEnd.transform.position,Quaternion.identity);
         Vector3 forceDirection = (shaftEnd.transform.position - transform.position).normalized * force;
-        ball.GetComponent<BallController>().AddForce(forceDirection, rigidbodyState);
+        ball.GetComponent<BallController>().AddForce(forceDirection, rigidbodyState, dragCo);
 
     }
     private void Start() {
