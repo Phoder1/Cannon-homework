@@ -37,11 +37,21 @@ public class BallController : MonoBehaviour
                 RB.drag = dragCo;
             }
         } 
+    }    
+    float gravityScale;
+    public float GravityScale { 
+        get => gravityScale;
+        set {
+            gravityScale = value;
+            if (rigidbodyOn) {
+                RB.gravityScale = gravityScale;
+            }
+        } 
     }
 
 
     Vector2 velocity;
-    public void AddForce(Vector3 force, bool rigidbodyState, float dragCo) {
+    public void AddForce(Vector3 force, bool rigidbodyState, float dragCo, float gravityScale) {
         if (rigidbodyState) {
             RigidbodyOn = true;
             RB.AddForce(force, ForceMode2D.Impulse);
@@ -51,12 +61,13 @@ public class BallController : MonoBehaviour
             velocity = force;
         }
         DragCo = dragCo;
+        GravityScale = gravityScale;
     }
 
     private void FixedUpdate() {
         if (!rigidbodyOn) {
             transform.position += (Vector3)velocity * Time.fixedDeltaTime;
-            velocity += gravity * Time.fixedDeltaTime;
+            velocity += gravity * GravityScale * Time.fixedDeltaTime;
             velocity *= (1 - Time.fixedDeltaTime * DragCo);
         }
         if (transform.position.y <= 0) {

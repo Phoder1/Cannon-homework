@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CannonController : MonoBehaviour
 {
@@ -13,6 +11,8 @@ public class CannonController : MonoBehaviour
     [SerializeField] private float maxAngle;
     [SerializeField] private float minFireRate;
     [SerializeField] private float maxFireRate;
+    [SerializeField] private float minGravityScale;
+    [SerializeField] private float maxGravityScale;
     [SerializeField] private float maxDrag;
 
     private float angle;
@@ -23,21 +23,22 @@ public class CannonController : MonoBehaviour
     private float autoFireRemainingTime;
     private float fireRate;
     private float dragCo;
+    private float gravityScale;
     Vector3 startPosition;
 
-    public float Height { 
+    public float Height {
         get => height;
         set {
             height = value;
             transform.position = startPosition + Vector3.up * value * maxHeight;
-        } 
+        }
     }
 
-    public float Angle { 
+    public float Angle {
         get => angle;
         set {
             angle = value;
-            transform.rotation = Quaternion.Euler(Vector3.forward * ((1-value) * (maxAngle + minAngle) - minAngle));
+            transform.rotation = Quaternion.Euler(Vector3.forward * ((1 - value) * (maxAngle + minAngle) - minAngle));
 
         }
     }
@@ -69,15 +70,19 @@ public class CannonController : MonoBehaviour
     public void SetDrag(float drag) {
         dragCo = drag * maxDrag;
     }
+    public void SetGravityScale(float gravity) {
+        gravityScale = minGravityScale + (1 - gravity) * (maxGravityScale - minGravityScale);
+    }
     #endregion
 
     private void Fire() {
-        GameObject ball = Instantiate(cannonBall,shaftEnd.transform.position,Quaternion.identity);
+        GameObject ball = Instantiate(cannonBall, shaftEnd.transform.position, Quaternion.identity);
         Vector3 forceDirection = (shaftEnd.transform.position - transform.position).normalized * force;
-        ball.GetComponent<BallController>().AddForce(forceDirection, rigidbodyState, dragCo);
+        ball.GetComponent<BallController>().AddForce(forceDirection, rigidbodyState, dragCo, gravityScale);
 
     }
     private void Start() {
+        gravityScale = minGravityScale + 0.75f * (maxGravityScale - minGravityScale);
         force = minForce;
         fireRate = minFireRate;
         startPosition = transform.position;
@@ -85,7 +90,7 @@ public class CannonController : MonoBehaviour
     private void Update() {
         if (autoFire) {
             autoFireRemainingTime -= Time.deltaTime;
-            if(autoFireRemainingTime <= 0) {
+            if (autoFireRemainingTime <= 0) {
                 Fire();
                 autoFireRemainingTime = 1 / fireRate;
             }
